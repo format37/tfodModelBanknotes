@@ -1,3 +1,5 @@
 # tfodModelBanknotes
 tensorflow object detection banknotes model
-https://habr.com/ru/company/nixsolutions/blog/422353/
+
+
+https://pythonprogramming.net/introduction-use-tensorflow-object-detection-api-tutorial/
