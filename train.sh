@@ -1,0 +1,1 @@
+python3 train.py -logtostderr -train_dir=/home/alex/projects/tfodhabr/models/research/object_detection/training -pipeline_config_path=/home/alex/projects/tfodhabr/models/research/object_detection/training/ssd_mobilenet_v1_coco.config -num_clones=6 -ps_tasks=1
