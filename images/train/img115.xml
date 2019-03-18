@@ -1,0 +1,38 @@
+<annotation>
+	<folder>train</folder>
+	<filename>img115.jpg</filename>
+	<path>C:\Users\forma\OneDrive\Рабочий стол\images\train\img115.jpg</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>640</width>
+		<height>640</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>banknotes</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>241</xmin>
+			<ymin>260</ymin>
+			<xmax>524</xmax>
+			<ymax>479</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>banknotes</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>262</xmin>
+			<ymin>100</ymin>
+			<xmax>527</xmax>
+			<ymax>260</ymax>
+		</bndbox>
+	</object>
+</annotation>
