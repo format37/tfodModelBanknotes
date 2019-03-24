@@ -1,6 +1,6 @@
 # tensorflow object detection banknotes model
 trained by tutorial:
-https://pythonprogramming.net/introduction-use-tensorflow-object-detection-api-tutorial/
+https://pythonprogramming.net/custom-objects-tracking-tensorflow-object-detection-api-tutorial/
 
 Then video stream detection from this tutorial:
 https://pythonprogramming.net/video-tensorflow-object-detection-api-tutorial/
