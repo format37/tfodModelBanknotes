@@ -10,3 +10,7 @@ https://pythonprogramming.net/video-tensorflow-object-detection-api-tutorial/
 https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/installation.md
 2. #from /home/alex/.local/lib/python3.6/site-packages/tensorflow/
 git clone https://github.com/tensorflow/models.git
+
+# Training
+1. put 90% images in images/train/ and 10% images in images/test/
+2. 
