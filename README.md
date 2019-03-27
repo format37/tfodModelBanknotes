@@ -12,7 +12,6 @@ https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc
 git clone https://github.com/tensorflow/models.git
 
 # Training
-
 #put 90% images in images/train/ and 10% images in images/test/
 
 python3 xml_to_csv.py
@@ -34,3 +33,11 @@ export PYTHONPATH=$PYTHONPATH:`pwd`:`pwd`/slim
 #copy train.py from legacy to models/research/object_detection/
 
 python3 train.py -logtostderr -train_dir=training -pipeline_config_path=training/faster_rcnn_nas_coco.config -num_clones=6 -ps_tasks=1
+
+# Using
+python3 bankopencv.py
+
+commented features:
+- open from image
+- open from web camera
+- stream to window
