@@ -30,6 +30,9 @@ tar xvzf modelFile
 - copy train.py from legacy to models/research/object_detection/
 python3 train.py -logtostderr -train_dir=training -pipeline_config_path=training/faster_rcnn_nas_coco.config -num_clones=6 -ps_tasks=1
 
+# Building inference graph
+
+
 # Using
 python3 bankopencv.py
 
