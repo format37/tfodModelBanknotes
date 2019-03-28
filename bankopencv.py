@@ -65,8 +65,8 @@ def remove_dish(image_np):
 	cv2.rectangle(image_np,(920,90) ,(1120,290),(0,255,0),-1)
 	return image_np
 
-#cap = cv2.VideoCapture(0)
-cap = cv2.VideoCapture("rtsp://admin:V35XB3Uz@10.0.4.102:554/live/main")
+#cap = cv2.VideoCapture(0)#webcam
+cap = cv2.VideoCapture("rtsp://LOGIN:PASS@IP:PORT/live/main")
 
 # This is needed since the notebook is stored in the object_detection folder.
 sys.path.append("..")
