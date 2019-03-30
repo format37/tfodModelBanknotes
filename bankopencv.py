@@ -23,13 +23,13 @@ score_limit	= .1
 #cap = cv2.VideoCapture("altkas1.avi")
 
 #shop
-cap = cv2.VideoCapture("rtsp://admin:V35XB3Uz@10.0.4.102:554/live/main")
+cap = cv2.VideoCapture("rtsp://admin:pass@10.0.4.102:554/live/main")
 
 #it
-#cap = cv2.VideoCapture("rtsp://admin:V35XB3Uz@10.2.6.167:554/live/main")
+#cap = cv2.VideoCapture("rtsp://admin:pass@10.2.6.167:554/live/main")
 
 #ex
-#cap = cv2.VideoCapture("rtsp://admin:V35XB3Uz@10.2.5.164:554/Streaming/Channels/1")
+#cap = cv2.VideoCapture("rtsp://admin:pass@10.2.5.164:554/Streaming/Channels/1")
 
 #print("camera connected")
 
