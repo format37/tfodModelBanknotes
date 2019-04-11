@@ -28,6 +28,9 @@ tar xvzf modelFile
 #in configuration file, updete: PATH_TO_BE_CONFIGURED, num_classes, batch_size, pbtxt paths
 #copy train.py from legacy to models/research/object_detection/
 python3 train.py -logtostderr -train_dir=training -pipeline_config_path=training/faster_rcnn_nas_coco.config -num_clones=6 -ps_tasks=1
+
+#from /home/alex/.local/lib/python3.6/site-packages/tensorflow/models/research/object_detection
+tensorboard --logdir='training'
 ```
 
 # Building inference graph
