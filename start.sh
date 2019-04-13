@@ -1,3 +1,0 @@
-#python3 train.py --logtostderr --train_dir=training --pipeline_config_path=training/faster_rcnn_nas_coco.config --num_clones=6 --ps_tasks=1
-python3 train.py -logtostderr -train_dir=training -pipeline_config_path=training/ssd_mobilenet_v1_coco.config -num_clones=6 -ps_tasks=1
-#python3 train.py --logtostderr --train_dir=training --pipeline_config_path=training/ssd_mobilenet_v1_fpn_shared_box_predictor_640x640_coco14_sync.config
