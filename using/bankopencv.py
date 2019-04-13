@@ -6,6 +6,10 @@ import tarfile
 import tensorflow as tf
 import zipfile
 
+#sys.path.insert(0, '/home/alex/.local/lib/python3.6/site-packages/tensorflow/models/research/object_detection')
+#sys.path.append('/home/alex/.local/lib/python3.6/site-packages/tensorflow/models/research/object_detection')
+sys.path.append("../..")
+
 from collections import defaultdict
 from io import StringIO
 from matplotlib import pyplot as plt
@@ -13,49 +17,58 @@ from PIL import Image
 
 import cv2
 import datetime
+import pymssql
+import requests
+
+
+
+contentSaveDirectory	= "/var/www/html/"
+
+conn = pymssql.connect(server='10.2.4.25', user='ICECORP\\1csystem', password='0dKasn@ms+', database='shopEvents')
+cursor = conn.cursor()
 
 score_limit	= .1
+xlenMax=200
+ylenMax=200
+
+imagewidth=1920
+imageheight=1080
 
 #webcam
-#cap = cv2.VideoCapture(0)
+#capAddress=0
 
-#file
-#cap = cv2.VideoCapture("altkas1.avi")
+#shop1
+#capAddress="rtsp://admin:V35XB3Uz@10.0.4.102:554/live/main"
 
-#shop
-cap = cv2.VideoCapture("rtsp://admin:pass@10.0.4.102:554/live/main")
-
-#it
-#cap = cv2.VideoCapture("rtsp://admin:pass@10.2.6.167:554/live/main")
+#shop2
+capAddress="rtsp://admin:V35XB3Uz@10.0.4.40:554/live/main"
 
 #ex
-#cap = cv2.VideoCapture("rtsp://admin:pass@10.2.5.164:554/Streaming/Channels/1")
+#capAddress="rtsp://admin:V35XB3Uz@10.2.5.164:554/Streaming/Channels/1"
 
-#print("camera connected")
+#ex
+#capAddress="rtsp://admin:V35XB3Uz@10.2.6.167:554/live/main"
 
-# What model to download.
-#MODEL_NAME = 'ssd_mobilenet_v1_coco_11_06_2017'
-#MODEL_NAME = 'banknotes_interference_graph'
-#MODEL_FILE = MODEL_NAME + '.tar.gz'
-#DOWNLOAD_BASE = 'http://download.tensorflow.org/models/object_detection/'
+#file
+#capAddress="altkas1.avi"
+
+cap = cv2.VideoCapture(capAddress)
 
 # Path to frozen detection graph. This is the actual model that is used for the object detection.
-#PATH_TO_CKPT = 'banknotes_interference_graph/frozen_inference_graph.pb'
-#PATH_TO_CKPT = 'banknotes_inference_graph_v2b/frozen_inference_graph.pb'
-PATH_TO_CKPT = 'banknotes_inference_graph_v2c/frozen_inference_graph.pb'
-#PATH_TO_CKPT =	"/home/alex/.local/lib/python3.6/site-packages/tensorflow/models/research/object_detection/banknotes_inference_graph_v2/frozen_inference_graph.pb"
+#PATH_TO_CKPT = 'banknotes_inference_graph_v2g/frozen_inference_graph.pb'
+#PATH_TO_CKPT = 'banknotes_inference_graph_v1/frozen_inference_graph.pb'
+#PATH_TO_CKPT = 'banknotes_inference_graph_v3_20904/frozen_inference_graph.pb'
+PATH_TO_CKPT = '../../banknotes_inference_graph_v5_5037/frozen_inference_graph.pb'
 
 # List of the strings that is used to add correct label for each box.
-#PATH_TO_LABELS = os.path.join('data', 'mscoco_label_map.pbtxt')
-PATH_TO_LABELS = os.path.join('training', 'object-detection.pbtxt')
+#PATH_TO_LABELS = os.path.join('training', 'object-detection.pbtxt')
+PATH_TO_LABELS = '../training/object-detection.pbtxt'
 
-#NUM_CLASSES = 90
 NUM_CLASSES = 1
 
 def rotate_bound(image, angle):
 	# grab the dimensions of the image and then determine the
 	# centre
-	#try:
 	(h, w) = image.shape[:2]
 	(cX, cY) = (w // 2, h // 2)
 
@@ -76,8 +89,6 @@ def rotate_bound(image, angle):
 
 	# perform the actual rotation and return the image
 	return cv2.warpAffine(image, M, (nW, nH))
-	#except AttributeError:
-		#return image
 
 def shop_quad(image_np):
 	#rotate
@@ -88,7 +99,6 @@ def shop_quad(image_np):
 	startx=300
 	starty=950
 	cropD	= rotated[starty:starty+quadsize, startx:startx+quadsize]
-	#startx=900
 	startx=810
 	starty=700
 	cropA	= rotated[starty:starty+quadsize, startx:startx+quadsize]
@@ -103,23 +113,22 @@ def shop_quad(image_np):
 	image_bottom=np.concatenate((cropD,cropC),axis=1)
 	return np.concatenate((image_top,image_bottom),axis=0)
 
-def remove_dish(image_np):
-	cv2.rectangle(image_np,(970,90) ,(1170,290),(0,255,0),-1)
+def drawMask(image_np):
+	#cv2.rectangle(image_np,(970,90) ,(1170,290),(0,255,0),-1)
+	x1=0
+	y1=0
+	x2=x1+1420
+	y2=y1+310+150
+	cv2.rectangle(image_np,(x1,y1) ,(x2,y2),(0,0,0),-1)
 	return image_np
 
 # This is needed since the notebook is stored in the object_detection folder.
-sys.path.append("..")
-
-
+sys.path.append("../../..")
+#sys.path.insert(0, '/home/alex/.local/lib/python3.6/site-packages/tensorflow/models/research/object_detection')
 # ## Object detection imports
 # Here are the imports from the object detection module.
-
-# In[3]:
-
 from utils import label_map_util
-
 from utils import visualization_utils as vis_util
-
 
 # # Model preparation 
 
@@ -129,11 +138,7 @@ from utils import visualization_utils as vis_util
 # 
 # By default we use an "SSD with Mobilenet" model here. See the [detection model zoo](https://github.com/tensorflow/models/blob/master/object_detection/g3doc/detection_model_zoo.md) for a list of other models that can be run out-of-the-box with varying speeds and accuracies.
 
-# In[4]:
-
 # ## Load a (frozen) Tensorflow model into memory.
-
-# In[6]:
 
 detection_graph = tf.Graph()
 with detection_graph.as_default():
@@ -143,14 +148,12 @@ with detection_graph.as_default():
 		od_graph_def.ParseFromString(serialized_graph)
 		tf.import_graph_def(od_graph_def, name='')
 
-
 # ## Loading label map
 # Label maps map indices to category names, so that when our convolution network predicts `5`, we know that this corresponds to `airplane`.  Here we use internal utility functions, but anything that returns a dictionary mapping integers to appropriate string labels would be fine
 
 label_map = label_map_util.load_labelmap(PATH_TO_LABELS)
 categories = label_map_util.convert_label_map_to_categories(label_map, max_num_classes=NUM_CLASSES, use_display_name=True)
 category_index = label_map_util.create_category_index(categories)
-
 
 # ## Helper code
 
@@ -160,25 +163,7 @@ def load_image_into_numpy_array(image):
 
 # # Detection
 
-# For the sake of simplicity we will use only 2 images:
-# image1.jpg
-# image2.jpg
-# If you want to test the code with your images, just add path to the images to the TEST_IMAGE_PATHS.
-PATH_TO_TEST_IMAGES_DIR = 'test_images'
-TEST_IMAGE_PATHS = [ os.path.join(PATH_TO_TEST_IMAGES_DIR, 'image{}.jpg'.format(i)) for i in range(1, 3) ]
-
-# Size, in inches, of the output images.
-#IMAGE_SIZE = (12, 8)
-
 lasteventdate=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-#configfile=open('shop.config')
-#if (configfile.read(1)=='y'):
-#	saveimage=True
-#else:
-#	saveimage=False
-
-#boxSizes=np.array([])
 objects_count = 0
 score_summ=0
 imageSaved=False
@@ -189,30 +174,18 @@ with detection_graph.as_default():
 	#with tf.Session(graph=detection_graph,config=config) as sess:
 	with tf.Session(graph=detection_graph) as sess:
 		while True:
-			#try:
-			
-			#datenow=datetime.datetime.now()
-			#print (datenow.strftime("%Y.%m.%d %H:%M:%S")+" read")
-			#logFile.write(datenow.strftime("%Y.%m.%d %H:%M:%S")+" read")
 			
 			ret, image_np = cap.read()
 			
-			#cv2.imwrite("eventimages/x.jpg", image_np)
 			if ret:
 				
-				
-				#im_width, im_height = image_np.shape[:2]
-				#print('%.1i'%im_width+'-'+'%.1i'%im_height)
-				#logFile.write('%.1i'%im_width+'-'+'%.1i'%im_height)
-				
-				imagewidth=1024
-				imageheight=1024
 				objectsPerTime=0							
 				configfile=open('shop.config')
 				
-				#image_np = cv2.imread("shop.jpeg")				
-				image_np=shop_quad(image_np)
-				#image_np=remove_dish(image_np)
+				#image_np = cv2.imread("shop3.jpg")
+				#image_np=shop_quad(image_np)
+				imageSource=image_np;
+				image_np=drawMask(image_np)
 				
 				# Expand dimensions since the model expects images to have shape: [1, None, None, 3]
 				image_np_expanded = np.expand_dims(image_np, axis=0)
@@ -235,21 +208,44 @@ with detection_graph.as_default():
 				
 				datenow=datetime.datetime.now()
 				#eventdate=datenow.strftime("%Y,%m,%d,%H,%M,%S")
-				eventdate=datenow.strftime("%Y,%m,%d,%H,%M")
+				eventdate=datenow.strftime("%Y,%m,%d,%H,%M")				
 				
-				#eventdate=datenow.strftime("%Y-%m-%d_%H_%M")
+				current_image_objects_count = 0
+				
+				#Boxes EX++
+				# Here output the category as string and score to terminal
+				#print([category_index.get(i) for i in classes[0]])
+				#print(scores)
+				#boxes_shape = boxes.shape
+				#if boxes_shape:
+					#for i in range(boxes_shape[0]):
+						#if len(boxes_shape) != 2 or boxes_shape[1] != 4:
+							#raise ValueError('Input must be of size [N, 4]')
+						#	print('Input must be of size [N, 4]')
+						#else:
+					#for i in range(boxes_shape[0]):
+						#display_str_list = ()
+						#if display_str_list_list:
+						#display_str_list = display_str_list_list[i]
+						#print("boxes[i, 0] "+'%.1i'%boxes[i, 0]);
+						#, boxes[i, 1], boxes[i, 2],boxes[i, 3], color, thickness, display_str_list)
+				#Boxes EX--
 				
 				for i in range(100):
-					if scores is None or final_score[i] > score_limit:					
-						xlen=npsboxes[0][1]*imagewidth-npsboxes[0][0]*imagewidth
-						ylen=npsboxes[0][3]*imageheight-npsboxes[0][2]*imageheight
-						if (xlen*ylen<350*350):
+					if scores is None or final_score[i] > score_limit:
+						#0 yTop
+						#1 xLeft
+						#2 yBottom
+						#3 xRight
+						xlen=npsboxes[i][3]*imagewidth-npsboxes[i][1]*imagewidth
+						ylen=npsboxes[i][2]*imageheight-npsboxes[i][0]*imageheight
+						if (xlen<xlenMax and ylen<ylenMax):
 						#if True:
+							current_image_objects_count = current_image_objects_count + 1
 							objects_count = objects_count + 1
 							score_summ	= score_summ+final_score[i]
-							#boxSizes=np.append(boxSizes, '%.2i'%xlen+" v "+'%.2i'%ylen)
-							#print("count")
-							print('%.2i'%objects_count+' '+'%.2i'%xlen+" v "+'%.2i'%ylen)
+							print('%.1i'%current_image_objects_count+' of '+'%.1i'%objects_count+' i='+'%.1i'%i+' '+'%.2i'%xlen+" v "+'%.2i'%ylen)
+							#print('%.1i'%current_image_objects_count+' of '+'%.1i'%objects_count+' i='+'%.1i'%i+' i0 '+'%.2f'%npsboxes[i][0]+" i1 "+'%.2f'%npsboxes[i][1]+" i2 "+'%.2f'%npsboxes[i][2]+" i3 "+'%.2f'%npsboxes[i][3])
 							
 							configfile=open('shop.config')
 							if (configfile.read(1)=='y' and imageSaved==False):
@@ -263,23 +259,26 @@ with detection_graph.as_default():
 								use_normalized_coordinates=True,
 								line_thickness=1,
 								min_score_thresh=score_limit)						
-								#eventdate=datenow.strftime("%Y-%m-%d_%H_%M_%S")								
 								fileEventDate=datenow.strftime("%Y-%m-%d_%H_%M")
-								#filename="eventimages/event"+fileEventDate+'_c'+'%.1i'%objects_count+'s'+'%.2i'%xlen+"x"+'%.2i'%ylen+".jpg"
-								#filename=
-								toSaveImage=image_np;
-								toSaveName="eventimages/event"+fileEventDate+'_s'+'%.2i'%xlen+"x"+'%.2i'%ylen
-								#cv2.imwrite(filename, image_np)
-								#print(filename)
-								print('%.3i'%objects_count+' '+'%.2i'%xlen+" v "+'%.2i'%ylen)
+								imageBoxed=image_np;
+								toSaveDay=datenow.strftime("%Y-%m-%d")
+								
+								imagesBoxedDirectory	= contentSaveDirectory+"events/"+toSaveDay+"/boxed/"
+								imagesSourceDirectory	= contentSaveDirectory+"events/"+toSaveDay+"/source/"
+								
+								if not os.path.exists(imagesBoxedDirectory):
+									os.makedirs(imagesBoxedDirectory)
+									
+								if not os.path.exists(imagesSourceDirectory):
+									os.makedirs(imagesSourceDirectory)
+									
+								toSaveName=fileEventDate+'_s'+'%.2i'%xlen+"x"+'%.2i'%ylen
+								#toSaveSourceName=fileEventDate+'_s'+'%.2i'%xlen+"x"+'%.2i'%ylen
+								print('%.3i'%objects_count+' '+'%.2i'%xlen+" v "+'%.2i'%ylen+" s:"+'%.2f'%final_score[i])
 								imageSaved=True
-						else:
-							#boxSizes=np.append(boxSizes, '%.2i'%xlen+" o "+'%.2i'%ylen)
-							print('--- '+'%.2i'%xlen+" o "+'%.2i'%ylen)
-							#print(""+'%.2f'%xlen+"x"+'%.2f'%ylen)
+						#else:
+							#print('%.1i'%current_image_objects_count+' of '+'%.1i'%objects_count+' i='+'%.1i'%i+' '+'%.2i'%xlen+" o "+'%.2i'%ylen+" s:"+'%.2f'%final_score[i])
 							
-				
-				
 				if (objects_count>0):
 					objectsPerTime=objectsPerTime+objects_count;		
 					if (eventdate!=lasteventdate):#save objectsPerMinute
@@ -287,43 +286,50 @@ with detection_graph.as_default():
 						score_summString='%.2f'%(score_summ/objects_count)#middle
 						objectsPerTimeString	= '%.1i'%objectsPerTime
 						print(eventdate+' - '+score_summString+' * '+objectsPerTimeString)
-						#for i in boxSizes:
-							#print(i)
+						
+						#save CSV
+						toSaveName=toSaveName				+'_p'+score_summString+'_o'+objectsPerTimeString
+						eventsFileName=contentSaveDirectory+"events/"+toSaveDay+"/"+datenow.strftime("%Y.%m.%d")+'.csv'
+						eventsFile = open(eventsFileName, 'a')
+						eventsFile.write(eventdate+','+'0,'+score_summString+','+objectsPerTimeString+","+toSaveName+".jpg"+'\n')
+						
+						#save JPG
+						configfile=open('shop.config')
+						if (configfile.read(1)=='y' and imageSaved==True):							
+							print(toSaveName)
+							boxedImagePath	= imagesBoxedDirectory	+ toSaveName+".jpg"
+							cv2.imwrite(boxedImagePath, imageBoxed)
+							cv2.imwrite(imagesSourceDirectory	+ toSaveName+".jpg", imageSource)
+							
+							#save to Telegram
+							print(boxedImagePath)
+							with open(boxedImagePath,'rb') as fh:
+								mydata = fh.read()
+								#payload = {'username': 'bob', 'email': 'bob@bob.com'}
+								response = requests.put('http://scriptlab.net/telegram/bots/relaybot/relayPhotoViaPutShop.php',data=mydata,headers={'content-type':'text/plain'},params={'file': boxedImagePath})
+							
+						#save SQL
+						cursor.execute("INSERT INTO events (eventDate,objectsCount,middleScore,FileName) VALUES ('"+datenow.strftime("%Y-%m-%dT%H:%M:%S")+"',"+objectsPerTimeString+","+score_summString+",'"+toSaveName+"')")
+						conn.commit()
 						
 						#reset
-						#boxSizes=np.array([])
-						eventsFile = open('enevts.csv' , 'a')
-						eventsFile.write(eventdate+','+'0,'+score_summString+','+objectsPerTimeString+'\n')
-						configfile=open('shop.config')
-						if (configfile.read(1)=='y' and imageSaved==True):
-							toSaveName=toSaveName+'_p'+score_summString+'_o'+objectsPerTimeString
-							print(toSaveName)
-							cv2.imwrite(toSaveName+".jpg", toSaveImage)
-						
 						objects_count = 0
 						objectsPerTime	= 0
 						score_summ=0
 						imageSaved=False
+				
+				cv2.imshow('object detection', cv2.resize(image_np, (960,540)))
+				if cv2.waitKey(25) & 0xFF == ord('q'):
+					cv2.destroyAllWindows()
+					break	
 			else:
-				
-				#print (datenow.strftime("%Y.%m.%d %H:%M:%S")+" lost")
-				#logFile.write(datenow.strftime("%Y.%m.%d %H:%M:%S")+" lost")
-				
 				#shop
-				cap = cv2.VideoCapture("rtsp://admin:V35XB3Uz@10.0.4.102:554/live/main")
-				
-			#break
-			#except:
-#				print("except")
-				#if ret==True:
-					#video_out.write(image_np)
-				#if cv2.waitKey(1) & 0xFF == ord('q'):
-					#out.release()
-					#break
+				cap = cv2.VideoCapture(capAddress)
 			
 			#cv2.imshow('object detection', cv2.resize(image_np, (1024,1024)))
+			#cv2.imshow('object detection', image_np)
 			#if cv2.waitKey(25) & 0xFF == ord('q'):
 			#	cv2.destroyAllWindows()
 			#	break
-			#print("the end")
 			#break
+conn.close()
