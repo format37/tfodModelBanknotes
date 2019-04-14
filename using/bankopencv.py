@@ -28,8 +28,8 @@ conn = pymssql.connect(server='10.2.4.25', user='ICECORP\\1csystem', password='0
 cursor = conn.cursor()
 
 score_limit	= .1
-xlenMax=200
-ylenMax=200
+xlenMax=9200
+ylenMax=9200
 
 imagewidth=1920
 imageheight=1080
@@ -41,7 +41,7 @@ imageheight=1080
 #capAddress="rtsp://admin:V35XB3Uz@10.0.4.102:554/live/main"
 
 #shop2
-capAddress="rtsp://admin:V35XB3Uz@10.0.4.40:554/live/main"
+#capAddress="rtsp://admin:V35XB3Uz@10.0.4.40:554/live/main"
 
 #ex
 #capAddress="rtsp://admin:V35XB3Uz@10.2.5.164:554/Streaming/Channels/1"
@@ -50,7 +50,7 @@ capAddress="rtsp://admin:V35XB3Uz@10.0.4.40:554/live/main"
 #capAddress="rtsp://admin:V35XB3Uz@10.2.6.167:554/live/main"
 
 #file
-#capAddress="altkas1.avi"
+capAddress="../../altkas1.avi"
 
 cap = cv2.VideoCapture(capAddress)
 
@@ -180,12 +180,12 @@ with detection_graph.as_default():
 			if ret:
 				
 				objectsPerTime=0							
-				configfile=open('shop.config')
+				#configfile=open('shop.config')
 				
 				#image_np = cv2.imread("shop3.jpg")
 				#image_np=shop_quad(image_np)
 				imageSource=image_np;
-				image_np=drawMask(image_np)
+				#image_np=drawMask(image_np)
 				
 				# Expand dimensions since the model expects images to have shape: [1, None, None, 3]
 				image_np_expanded = np.expand_dims(image_np, axis=0)
@@ -239,16 +239,18 @@ with detection_graph.as_default():
 						#3 xRight
 						xlen=npsboxes[i][3]*imagewidth-npsboxes[i][1]*imagewidth
 						ylen=npsboxes[i][2]*imageheight-npsboxes[i][0]*imageheight
-						if (xlen<xlenMax and ylen<ylenMax):
-						#if True:
+						#if (xlen<xlenMax and ylen<ylenMax):
+						if True:
 							current_image_objects_count = current_image_objects_count + 1
 							objects_count = objects_count + 1
 							score_summ	= score_summ+final_score[i]
 							print('%.1i'%current_image_objects_count+' of '+'%.1i'%objects_count+' i='+'%.1i'%i+' '+'%.2i'%xlen+" v "+'%.2i'%ylen)
 							#print('%.1i'%current_image_objects_count+' of '+'%.1i'%objects_count+' i='+'%.1i'%i+' i0 '+'%.2f'%npsboxes[i][0]+" i1 "+'%.2f'%npsboxes[i][1]+" i2 "+'%.2f'%npsboxes[i][2]+" i3 "+'%.2f'%npsboxes[i][3])
 							
-							configfile=open('shop.config')
-							if (configfile.read(1)=='y' and imageSaved==False):
+							#configfile=open('shop.config')
+							#if (configfile.read(1)=='y' and imageSaved==False):
+							#if (imageSaved==False):
+							if (True):
 								# Visualization of the results of a detection.
 								vis_util.visualize_boxes_and_labels_on_image_array(
 								image_np,
@@ -274,11 +276,18 @@ with detection_graph.as_default():
 									
 								toSaveName=fileEventDate+'_s'+'%.2i'%xlen+"x"+'%.2i'%ylen
 								#toSaveSourceName=fileEventDate+'_s'+'%.2i'%xlen+"x"+'%.2i'%ylen
-								print('%.3i'%objects_count+' '+'%.2i'%xlen+" v "+'%.2i'%ylen+" s:"+'%.2f'%final_score[i])
+								
+								##print('%.3i'%objects_count+' '+'%.2i'%xlen+" v "+'%.2i'%ylen+" s:"+'%.2f'%final_score[i])
+								
 								imageSaved=True
 						#else:
 							#print('%.1i'%current_image_objects_count+' of '+'%.1i'%objects_count+' i='+'%.1i'%i+' '+'%.2i'%xlen+" o "+'%.2i'%ylen+" s:"+'%.2f'%final_score[i])
-							
+				
+				cv2.imshow('object detection', cv2.resize(image_np, (960,540)))
+				if cv2.waitKey(25) & 0xFF == ord('q'):
+					cv2.destroyAllWindows()
+					break
+				
 				if (objects_count>0):
 					objectsPerTime=objectsPerTime+objects_count;		
 					if (eventdate!=lasteventdate):#save objectsPerMinute
@@ -318,10 +327,7 @@ with detection_graph.as_default():
 						score_summ=0
 						imageSaved=False
 				
-				cv2.imshow('object detection', cv2.resize(image_np, (960,540)))
-				if cv2.waitKey(25) & 0xFF == ord('q'):
-					cv2.destroyAllWindows()
-					break	
+				
 			else:
 				#shop
 				cap = cv2.VideoCapture(capAddress)
