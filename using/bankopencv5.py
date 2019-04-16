@@ -113,8 +113,8 @@ def main(argv):
 								score_summ	= score_summ+final_score[i]
 						
 						#save for monitoring						
-						cv2.putText(image_np,"GPU-"+str(ops_gpu)+":"+str(objectsDetectedCount),(10,150), font, 1,(255,255,255),2,cv2.LINE_AA)
-						cv2.imwrite(imagesBoxedDirectory+dtnow.strftime("%Y-%m-%d_%H_%M_%S")+".jpg", image_np)
+						#cv2.putText(image_np,"GPU-"+str(ops_gpu)+":"+str(objectsDetectedCount),(10,150), font, 1,(255,255,255),2,cv2.LINE_AA)
+						#cv2.imwrite(imagesBoxedDirectory+dtnow.strftime("%Y-%m-%d_%H_%M_%S")+".jpg", image_np)
 						
 						if objectsDetectedCount>0:						
 							score_summString	= '%.2f'%(score_summ/objectsDetectedCount)#middle
