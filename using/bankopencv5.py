@@ -19,15 +19,24 @@ import pymssql
 import cv2
 capAddress="rtsp://admin:V35XB3Uz@10.0.4.40:554/live/main"
 sys.path.append("../../..")
+debug=True
 
 from utils import label_map_util
 from utils import visualization_utils as vis_util
+
+def readConfig(filename,result):
+	configFile = open(filename,'r')
+	try:
+		result=configFile.read()
+	finally:
+		configFile.close()
+	return result
 
 def load_image_into_numpy_array(image):
 	(im_width, im_height) = image.size
 	return np.array(image.getdata()).reshape((im_height, im_width, 3)).astype(np.uint8)
 
-def main(argv):
+def main(argv):	
 	inputfile = ''
 	outputfile = ''
 	try:
@@ -53,12 +62,15 @@ def main(argv):
 	PATH_TO_CKPT = '../../banknotes_inference_graph_v3_20904/frozen_inference_graph.pb'
 	PATH_TO_LABELS = '../training/object-detection.pbtxt'
 	NUM_CLASSES = 1
-	imagesBoxedDirectory	= "images/boxed/"									
+	imagesBoxedDirectory	= "images/boxed/"
+	sizeMin	= 50
+	sizeMax	= 190
 	if not os.path.exists(imagesBoxedDirectory):
 		os.makedirs(imagesBoxedDirectory)
 	initContentSaveDirectory	= "/var/www/html/"
-	conn = pymssql.connect(server='10.2.4.25', user='ICECORP\\1csystem', password='0dKasn@ms+', database='shopEvents')
-	cursor = conn.cursor()
+	if debug==False:
+		conn = pymssql.connect(server='10.2.4.25', user='ICECORP\\1csystem', password='0dKasn@ms+', database='shopEvents')
+		cursor = conn.cursor()
 	font = cv2.FONT_HERSHEY_SIMPLEX
 	
 	detection_graph = tf.Graph()
@@ -86,6 +98,11 @@ def main(argv):
 					if is_it_my_time:
 						cap = cv2.VideoCapture(capAddress)
 						ret, image_np = cap.read()
+						
+						if debug:
+							#image_np = cv2.imread("found.jpg")
+							image_np = cv2.imread("empty.jpg")
+						
 						image_np_expanded=np.expand_dims(image_np, axis=0)
 						image_tensor = detection_graph.get_tensor_by_name('image_tensor:0')
 						boxes = detection_graph.get_tensor_by_name('detection_boxes:0')
@@ -107,24 +124,43 @@ def main(argv):
 						#get objects detected count
 						objectsDetectedCount	= 0
 						score_summ	= 0
+						npsboxes=np.squeeze(boxes)
+						imageheight, imagewidth  = image_np.shape[:2]
+																		
+						score_limit	= float(readConfig('score_limit.config',	score_limit))
+						sizeMin		= int(readConfig('sizeMin.config',			sizeMin))
+						sizeMax		= int(readConfig('sizeMax.config',			sizeMax))
+						
 						for i in range(100):
 							if scores is None or final_score[i] > score_limit:
-								objectsDetectedCount=objectsDetectedCount+1
-								score_summ	= score_summ+final_score[i]
+								#ensurance boxes
+								rx1=int(npsboxes[i][1]*imagewidth)	#1 xLeft
+								ry1=int(npsboxes[i][0]*imageheight)	#0 yTop
+								rx2=int(npsboxes[i][3]*imagewidth)	#3 xRight
+								ry2=int(npsboxes[i][2]*imageheight)	#2 yBottom
+								
+								xlen=rx2-rx1
+								ylen=ry2-ry1
+								if xlen>sizeMin and xlen<sizeMax and ylen>sizeMin and ylen<sizeMax:
+									print(str(i)+": "+str(xlen)+" x "+str(ylen)+" score: "+str(final_score[i]))									
+									objectsDetectedCount=objectsDetectedCount+1
+									score_summ	= score_summ+final_score[i]
+									cv2.rectangle(image_np, (rx1,ry1) , (rx2,ry2) , (0,255,0) , 1)
 						
-						#save for monitoring						
-						#cv2.putText(image_np,"GPU-"+str(ops_gpu)+":"+str(objectsDetectedCount),(10,150), font, 1,(255,255,255),2,cv2.LINE_AA)
-						#cv2.imwrite(imagesBoxedDirectory+dtnow.strftime("%Y-%m-%d_%H_%M_%S")+".jpg", image_np)
-						
-						if objectsDetectedCount>0:						
+						if objectsDetectedCount>1:						
 							score_summString	= '%.2f'%(score_summ/objectsDetectedCount)#middle
 							score_summStringH	= '%.2f'%(score_summ/objectsDetectedCount*100)#middle
 						else:
 							score_summString	= "0"
 							score_summStringH	= "0"
 						
+						#save for monitoring						
+						#cv2.putText(image_np,"GPU-"+str(ops_gpu)+" score: "+score_summStringH,(10,150), font, 1,(255,255,255),1,cv2.LINE_AA)
+						cv2.putText(image_np,str(objectsDetectedCount)+":"+image_np,score_summStringH+"%",(10,150), font, 1,(255,255,255),1,cv2.LINE_AA)
+						#cv2.imwrite(imagesBoxedDirectory+dtnow.strftime("%Y-%m-%d_%H_%M_%S")+".jpg", image_np)
+						
 						#save for report
-						if objectsDetectedCount>1:
+						if debug==False and objectsDetectedCount>0:
 							toSaveDay=dtnow.strftime("%Y-%m-%d")
 							contentSaveDirectory	= initContentSaveDirectory+"events/"+toSaveDay+"/boxed/"
 							if not os.path.exists(contentSaveDirectory):
@@ -137,13 +173,12 @@ def main(argv):
 							#save to sql							
 							cursor.execute("INSERT INTO events (eventDate,objectsCount,middleScore,FileName) VALUES ('"+dtnow.strftime("%Y-%m-%dT%H:%M:%S")+"',"+str(objectsDetectedCount)+","+score_summString+",'"+contentSaveFileName+"')")
 							conn.commit()
-							
+
 						print(str(ops_gpu)+"."+str(secondcurrent)+" "+score_summStringH+"% in "+str(objectsDetectedCount)+" objects")
-							
-						#if cv2.waitKey(25) & 0xFF == ord('q'):
-						#	cap.release()
-						#	cv2.destroyAllWindows()
-						#	break
+						
+						if debug:
+							cv2.imwrite("result.jpg", image_np)
+							break
 				
 if __name__ == "__main__":
 	main(sys.argv[1:])
