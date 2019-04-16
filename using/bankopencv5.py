@@ -53,10 +53,10 @@ def main(argv):
 	PATH_TO_CKPT = '../../banknotes_inference_graph_v3_20904/frozen_inference_graph.pb'
 	PATH_TO_LABELS = '../training/object-detection.pbtxt'
 	NUM_CLASSES = 1
-	imagesBoxedDirectory	= "images/boxed/"								
-	contentSaveDirectory	= "/var/www/html/"
+	imagesBoxedDirectory	= "images/boxed/"									
 	if not os.path.exists(imagesBoxedDirectory):
 		os.makedirs(imagesBoxedDirectory)
+	initContentSaveDirectory	= "/var/www/html/"
 	conn = pymssql.connect(server='10.2.4.25', user='ICECORP\\1csystem', password='0dKasn@ms+', database='shopEvents')
 	cursor = conn.cursor()
 	font = cv2.FONT_HERSHEY_SIMPLEX
@@ -115,27 +115,35 @@ def main(argv):
 						#save for monitoring						
 						cv2.putText(image_np,"GPU-"+str(ops_gpu)+":"+str(objectsDetectedCount),(10,150), font, 1,(255,255,255),2,cv2.LINE_AA)
 						cv2.imwrite(imagesBoxedDirectory+dtnow.strftime("%Y-%m-%d_%H_%M_%S")+".jpg", image_np)
-
+						
+						if objectsDetectedCount>0:						
+							score_summString	= '%.2f'%(score_summ/objectsDetectedCount)#middle
+							score_summStringH	= '%.2f'%(score_summ/objectsDetectedCount*100)#middle
+						else:
+							score_summString	= "0"
+							score_summStringH	= "0"
+						
 						#save for report
-						if objectsDetectedCount>2:
+						if objectsDetectedCount>1:
 							toSaveDay=dtnow.strftime("%Y-%m-%d")
-							imagesBoxedDirectory	= contentSaveDirectory+"events/"+toSaveDay+"/boxed/"							
-							boxedImagePath	= imagesBoxedDirectory	+ dtnow.strftime("%Y-%m-%d_%H_%M_%S")+"_obj_"+str(objectsDetectedCount)+".jpg"
-							cv2.imwrite(boxedImagePath, image_np)
-							print(boxedImagePath)
+							contentSaveDirectory	= initContentSaveDirectory+"events/"+toSaveDay+"/boxed/"
+							if not os.path.exists(contentSaveDirectory):
+								os.makedirs(contentSaveDirectory)
+							contentSaveFileName	= dtnow.strftime("%Y-%m-%d_%H_%M_%S")+"_obj_"+str(objectsDetectedCount)
+							contentSavePath	= contentSaveDirectory	+ contentSaveFileName +".jpg"
+							cv2.imwrite(contentSavePath, image_np)
+							print(contentSaveFileName)
 						
-							#save to sql
-							score_summString='%.2f'%(score_summ/objectsDetectedCount)#middle
-							cursor.execute("INSERT INTO events (eventDate,objectsCount,middleScore,FileName) VALUES ('"+dtnow.strftime("%Y-%m-%dT%H:%M:%S")+"',"+str(objectsDetectedCount)+","+score_summString+",'"+boxedImagePath+"')")
+							#save to sql							
+							cursor.execute("INSERT INTO events (eventDate,objectsCount,middleScore,FileName) VALUES ('"+dtnow.strftime("%Y-%m-%dT%H:%M:%S")+"',"+str(objectsDetectedCount)+","+score_summString+",'"+contentSaveFileName+"')")
 							conn.commit()
-						
-						
-						print(str(ops_gpu)+"."+str(secondcurrent))
 							
-						if cv2.waitKey(25) & 0xFF == ord('q'):
-							cap.release()
-							cv2.destroyAllWindows()
-							break
+						print(str(ops_gpu)+"."+str(secondcurrent)+" "+score_summStringH+"% in "+str(objectsDetectedCount)+" objects")
+							
+						#if cv2.waitKey(25) & 0xFF == ord('q'):
+						#	cap.release()
+						#	cv2.destroyAllWindows()
+						#	break
 				
 if __name__ == "__main__":
 	main(sys.argv[1:])
