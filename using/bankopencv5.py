@@ -17,9 +17,10 @@ from PIL import Image
 
 import pymssql
 import cv2
-capAddress="rtsp://admin:V35XB3Uz@10.0.4.40:554/live/main"
+capAddress="rtsp://admin:V35XB3Uz@10.0.4.102:554/live/main"#shop1
+#capAddress="rtsp://admin:V35XB3Uz@10.0.4.40:554/live/main"#shop2
 sys.path.append("../../..")
-debug=True
+debug=False
 
 from utils import label_map_util
 from utils import visualization_utils as vis_util
@@ -98,87 +99,87 @@ def main(argv):
 					if is_it_my_time:
 						cap = cv2.VideoCapture(capAddress)
 						ret, image_np = cap.read()
-						
-						if debug:
-							#image_np = cv2.imread("found.jpg")
-							image_np = cv2.imread("empty.jpg")
-						
-						image_np_expanded=np.expand_dims(image_np, axis=0)
-						image_tensor = detection_graph.get_tensor_by_name('image_tensor:0')
-						boxes = detection_graph.get_tensor_by_name('detection_boxes:0')
-						scores = detection_graph.get_tensor_by_name('detection_scores:0')
-						classes = detection_graph.get_tensor_by_name('detection_classes:0')
-						num_detections = detection_graph.get_tensor_by_name('num_detections:0')
-						(boxes, scores, classes, num_detections) = sess.run([boxes, scores, classes, num_detections],feed_dict={image_tensor: image_np_expanded})
-						final_score = np.squeeze(scores)
-						
-						vis_util.visualize_boxes_and_labels_on_image_array(
-							image_np,
-							np.squeeze(boxes),
-							np.squeeze(classes).astype(np.int32),
-							np.squeeze(scores),
-							category_index,
-							use_normalized_coordinates=True,
-							line_thickness=2)
-						
-						#get objects detected count
-						objectsDetectedCount	= 0
-						score_summ	= 0
-						npsboxes=np.squeeze(boxes)
-						imageheight, imagewidth  = image_np.shape[:2]
-																		
-						score_limit	= float(readConfig('score_limit.config',	score_limit))
-						sizeMin		= int(readConfig('sizeMin.config',			sizeMin))
-						sizeMax		= int(readConfig('sizeMax.config',			sizeMax))
-						
-						for i in range(100):
-							if scores is None or final_score[i] > score_limit:
-								#ensurance boxes
-								rx1=int(npsboxes[i][1]*imagewidth)	#1 xLeft
-								ry1=int(npsboxes[i][0]*imageheight)	#0 yTop
-								rx2=int(npsboxes[i][3]*imagewidth)	#3 xRight
-								ry2=int(npsboxes[i][2]*imageheight)	#2 yBottom
-								
-								xlen=rx2-rx1
-								ylen=ry2-ry1
-								if xlen>sizeMin and xlen<sizeMax and ylen>sizeMin and ylen<sizeMax:
-									print(str(i)+": "+str(xlen)+" x "+str(ylen)+" score: "+str(final_score[i]))									
-									objectsDetectedCount=objectsDetectedCount+1
-									score_summ	= score_summ+final_score[i]
-									cv2.rectangle(image_np, (rx1,ry1) , (rx2,ry2) , (0,255,0) , 1)
-						
-						if objectsDetectedCount>1:						
-							score_summString	= '%.2f'%(score_summ/objectsDetectedCount)#middle
-							score_summStringH	= '%.2f'%(score_summ/objectsDetectedCount*100)#middle
-						else:
-							score_summString	= "0"
-							score_summStringH	= "0"
-						
-						#save for monitoring						
-						#cv2.putText(image_np,"GPU-"+str(ops_gpu)+" score: "+score_summStringH,(10,150), font, 1,(255,255,255),1,cv2.LINE_AA)
-						cv2.putText(image_np,str(objectsDetectedCount)+":"+image_np,score_summStringH+"%",(10,150), font, 1,(255,255,255),1,cv2.LINE_AA)
-						#cv2.imwrite(imagesBoxedDirectory+dtnow.strftime("%Y-%m-%d_%H_%M_%S")+".jpg", image_np)
-						
-						#save for report
-						if debug==False and objectsDetectedCount>0:
-							toSaveDay=dtnow.strftime("%Y-%m-%d")
-							contentSaveDirectory	= initContentSaveDirectory+"events/"+toSaveDay+"/boxed/"
-							if not os.path.exists(contentSaveDirectory):
-								os.makedirs(contentSaveDirectory)
-							contentSaveFileName	= dtnow.strftime("%Y-%m-%d_%H_%M_%S")+"_obj_"+str(objectsDetectedCount)
-							contentSavePath	= contentSaveDirectory	+ contentSaveFileName +".jpg"
-							cv2.imwrite(contentSavePath, image_np)
-							print(contentSaveFileName)
-						
-							#save to sql							
-							cursor.execute("INSERT INTO events (eventDate,objectsCount,middleScore,FileName) VALUES ('"+dtnow.strftime("%Y-%m-%dT%H:%M:%S")+"',"+str(objectsDetectedCount)+","+score_summString+",'"+contentSaveFileName+"')")
-							conn.commit()
+						if ret:
+							if debug:
+								#image_np = cv2.imread("found.jpg")
+								image_np = cv2.imread("empty.jpg")
+							
+							image_np_expanded=np.expand_dims(image_np, axis=0)
+							image_tensor = detection_graph.get_tensor_by_name('image_tensor:0')
+							boxes = detection_graph.get_tensor_by_name('detection_boxes:0')
+							scores = detection_graph.get_tensor_by_name('detection_scores:0')
+							classes = detection_graph.get_tensor_by_name('detection_classes:0')
+							num_detections = detection_graph.get_tensor_by_name('num_detections:0')
+							(boxes, scores, classes, num_detections) = sess.run([boxes, scores, classes, num_detections],feed_dict={image_tensor: image_np_expanded})
+							final_score = np.squeeze(scores)
+							
+							vis_util.visualize_boxes_and_labels_on_image_array(
+								image_np,
+								np.squeeze(boxes),
+								np.squeeze(classes).astype(np.int32),
+								np.squeeze(scores),
+								category_index,
+								use_normalized_coordinates=True,
+								line_thickness=2)
+							
+							#get objects detected count
+							objectsDetectedCount	= 0
+							score_summ	= 0
+							npsboxes=np.squeeze(boxes)
+							imageheight, imagewidth  = image_np.shape[:2]
+																			
+							score_limit	= float(readConfig('score_limit.config',	score_limit))
+							sizeMin		= int(readConfig('sizeMin.config',			sizeMin))
+							sizeMax		= int(readConfig('sizeMax.config',			sizeMax))
+							
+							for i in range(100):
+								if scores is None or final_score[i] > score_limit:
+									#ensurance boxes
+									rx1=int(npsboxes[i][1]*imagewidth)	#1 xLeft
+									ry1=int(npsboxes[i][0]*imageheight)	#0 yTop
+									rx2=int(npsboxes[i][3]*imagewidth)	#3 xRight
+									ry2=int(npsboxes[i][2]*imageheight)	#2 yBottom
+									
+									xlen=rx2-rx1
+									ylen=ry2-ry1
+									if xlen>sizeMin and xlen<sizeMax and ylen>sizeMin and ylen<sizeMax:
+										print(str(i)+": "+str(xlen)+" x "+str(ylen)+" score: "+str(final_score[i]))									
+										objectsDetectedCount=objectsDetectedCount+1
+										score_summ	= score_summ+final_score[i]
+										cv2.rectangle(image_np, (rx1,ry1) , (rx2,ry2) , (0,255,0) , 1)
+							
+							if objectsDetectedCount>0:						
+								score_summString	= '%.2f'%(score_summ/objectsDetectedCount)#middle
+								score_summStringH	= '%.2f'%(score_summ/objectsDetectedCount*100)#middle
+							else:
+								score_summString	= "0"
+								score_summStringH	= "0"
+							
+							#save for monitoring						
+							#cv2.putText(image_np,"GPU-"+str(ops_gpu)+" score: "+score_summStringH,(10,150), font, 1,(255,255,255),1,cv2.LINE_AA)
+							cv2.putText(image_np,str(objectsDetectedCount)+":"+score_summStringH+"%",(10,150), font, 1,(255,255,255),1,cv2.LINE_AA)
+							#cv2.imwrite(imagesBoxedDirectory+dtnow.strftime("%Y-%m-%d_%H_%M_%S")+".jpg", image_np)
+							
+							#save for report
+							if debug==False and objectsDetectedCount>0:
+								toSaveDay=dtnow.strftime("%Y-%m-%d")
+								contentSaveDirectory	= initContentSaveDirectory+"events/"+toSaveDay+"/boxed/"
+								if not os.path.exists(contentSaveDirectory):
+									os.makedirs(contentSaveDirectory)
+								contentSaveFileName	= dtnow.strftime("%Y-%m-%d_%H_%M_%S")+"_obj_"+str(objectsDetectedCount)
+								contentSavePath	= contentSaveDirectory	+ contentSaveFileName +".jpg"
+								cv2.imwrite(contentSavePath, image_np)
+								print(contentSaveFileName)
+							
+								#save to sql							
+								cursor.execute("INSERT INTO events (eventDate,objectsCount,middleScore,FileName) VALUES ('"+dtnow.strftime("%Y-%m-%dT%H:%M:%S")+"',"+str(objectsDetectedCount)+","+score_summString+",'"+contentSaveFileName+"')")
+								conn.commit()
 
-						print(str(ops_gpu)+"."+str(secondcurrent)+" "+score_summStringH+"% in "+str(objectsDetectedCount)+" objects")
-						
-						if debug:
-							cv2.imwrite("result.jpg", image_np)
-							break
+							print(str(ops_gpu)+"."+str(secondcurrent)+" "+score_summStringH+"% in "+str(objectsDetectedCount)+" objects")
+							
+							if debug:
+								cv2.imwrite("result.jpg", image_np)
+								break
 				
 if __name__ == "__main__":
 	main(sys.argv[1:])
