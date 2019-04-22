@@ -17,8 +17,8 @@ from PIL import Image
 
 import pymssql
 import cv2
-capAddress="rtsp://admin:V35XB3Uz@10.0.4.102:554/live/main"#shop1
-#capAddress="rtsp://admin:V35XB3Uz@10.0.4.40:554/live/main"#shop2
+#capAddress="rtsp://admin:V35XB3Uz@10.0.4.102:554/live/main"#shop1
+capAddress="rtsp://admin:V35XB3Uz@10.0.4.40:554/live/main"#shop2
 sys.path.append("../../..")
 debug=False
 
@@ -175,11 +175,13 @@ def main(argv):
 								cursor.execute("INSERT INTO events (eventDate,objectsCount,middleScore,FileName) VALUES ('"+dtnow.strftime("%Y-%m-%dT%H:%M:%S")+"',"+str(objectsDetectedCount)+","+score_summString+",'"+contentSaveFileName+"')")
 								conn.commit()
 
-							print(str(ops_gpu)+"."+str(secondcurrent)+" "+score_summStringH+"% in "+str(objectsDetectedCount)+" objects")
+							print(str(ops_gpu)+": "+dtnow.strftime("%H:%M:%S")+" "+score_summStringH+"% in "+str(objectsDetectedCount)+" objects")
 							
 							if debug:
 								cv2.imwrite("result.jpg", image_np)
 								break
+						else:
+							print(dtnow.strftime("%H:%M:%S")+" no image")
 				
 if __name__ == "__main__":
 	main(sys.argv[1:])
