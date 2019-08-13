@@ -16,18 +16,25 @@ else:
 	print("scriptlab.net - Unavailable. Exit")
 	exit()
 
-if host_check("10.2.4.25"):
-	print("10.2.4.25 - ok")
+if host_check("10.2.4.95"):
+	print("10.2.4.95 (images server) - ok")
 else:
-	print("10.2.4.25 - Unavailable. Exit")
-	send_to_telegram(chat,"10.2.4.25 - Unavailable. Unable to terminate records. Exit")
+	print("10.2.4.95 (images server) - Unavailable. Exit")
+	send_to_telegram(chat,"10.2.4.95 (images server) - Unavailable. Unable to terminate records. Exit")
+	exit()
+
+if host_check("10.2.5.25"):
+	print("10.2.5.25 (SQL) - ok")
+else:
+	print("10.2.5.25 (SQL) - Unavailable. Exit")
+	send_to_telegram(chat,"10.2.5.25 (SQL) - Unavailable. Unable to terminate records. Exit")
 	exit()
 
 date_current=datetime.now()
 
 #send_to_telegram(chat,"Removing old files..")
 
-conn = pymssql.connect(server='10.2.4.25', user='ICECORP\\1csystem', password='0dKasn@ms+', database='shopEvents')
+conn = pymssql.connect(server='10.2.4.25', user='ICECORP\\1csystem', password='1cPass', database='shopEvents')
 cursor = conn.cursor()
 time_limit	= (date_current - dt.timedelta(days=life_day_lenght)).strftime('%Y-%m-%d %H:%M:%S')
 
@@ -92,6 +99,7 @@ for root, subdirs, files in os.walk(shares_path):
 		for filename in files:
 
 			if ".jpg" in filename:
+				#print(filename)
 				file_date.update(filename)
 				file_path = os.path.join(root, filename)
 				
