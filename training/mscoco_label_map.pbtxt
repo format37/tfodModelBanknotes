@@ -1,0 +1,72 @@
+item {
+	id: 1
+	name: 'bcard'	
+}
+item {
+	id: 2
+	name: 'partpack'	
+}
+item {
+	id: 3
+	name: 'photo_paper'	
+}
+item {
+	id: 4
+	name: 'iceberg_card'	
+}
+item {
+	id: 5
+	name: 'document'	
+}
+item {
+	id: 6
+	name: 'package'	
+}
+item {
+	id: 7
+	name: 'smartphone'	
+}
+item {
+	id: 8
+	name: 'svetocopy'	
+}
+item {
+	id: 9
+	name: 'banknotes10'	
+}
+item {
+	id: 10
+	name: 'banknotes50'	
+}
+item {
+	id: 11
+	name: 'banknotes100'	
+}
+item {
+	id: 12
+	name: 'banknotes200'	
+}
+item {
+	id: 13
+	name: 'banknotes500'	
+}
+item {
+	id: 14
+	name: 'banknotes1000'	
+}
+item {
+	id: 15
+	name: 'banknotes2000'	
+}
+item {
+	id: 16
+	name: 'banknotes5000'	
+}
+item {
+	id: 17
+	name: 'mouse'	
+}
+item {
+	id: 18
+	name: 'napkins'	
+}
