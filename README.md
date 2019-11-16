@@ -45,3 +45,6 @@ commented features:
 - open from image
 - open from web camera
 - stream to window
+
+# Result
+![result](./images/2019-11-15_19-03-56.jpg)
