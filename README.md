@@ -46,5 +46,18 @@ commented features:
 - open from web camera
 - stream to window
 
+# Add store
+```
+1. detection_9_off.py  
+add shop names:  
+shop_names      = ["Altuf","Avangard","Mar","Tag","Sklad","SkladSM1","SkladSM2"]  
+2. data_prepare.py  
+add shop names:  
+shop_names=["Altuf","Avangard","Mar","Tag","Sklad","SkladSM1","SkladSM2"]  
+3. mkdir /media/alex/7274516274512A5D/rcimages/5  
+4. mkdir /media/alex/7274516274512A5D/rcimages/5/boxed  
+5. mkdir /media/alex/7274516274512A5D/rcimages/5/original  
+```
+
 # Result
 ![result](./images/2019-11-15_19-03-56.jpg)
