@@ -6,8 +6,13 @@ def host_check(hostname):
 	return True if os.system("ping -c 1 " + hostname)==0 else False
 	
 def send_to_telegram(chat,message):
+	headers = {
+    "Origin": "http://scriptlab.net",
+    "Referer": "http://scriptlab.net/telegram/bots/relaybot/",
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.110 Safari/537.36'}
+	
 	url	= "http://scriptlab.net/telegram/bots/relaybot/relaylocked.php?chat="+chat+"&text="+message
-	requests.get(url)
+	requests.get(url,headers = headers)
 	
 class filedate:
 	def __init__(self):

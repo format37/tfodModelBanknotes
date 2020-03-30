@@ -7,7 +7,7 @@ import datetime as dt
 from lex import host_check,send_to_telegram, filedate
 import progressbar
 
-life_day_lenght=3
+life_day_lenght=30
 chat = "-1001448066127"
 
 if host_check("scriptlab.net"):
@@ -23,18 +23,18 @@ else:
 	send_to_telegram(chat,"10.2.4.95 (images server) - Unavailable. Unable to terminate records. Exit")
 	exit()
 
-if host_check("10.2.5.25"):
-	print("10.2.5.25 (SQL) - ok")
+if host_check("10.2.4.25"):
+	print("10.2.4.25 (SQL) - ok")
 else:
-	print("10.2.5.25 (SQL) - Unavailable. Exit")
-	send_to_telegram(chat,"10.2.5.25 (SQL) - Unavailable. Unable to terminate records. Exit")
+	print("10.2.4.25 (SQL) - Unavailable. Exit")
+	send_to_telegram(chat,"10.2.4.25 (SQL) - Unavailable. Unable to terminate records. Exit")
 	exit()
 
 date_current=datetime.now()
 
 #send_to_telegram(chat,"Removing old files..")
 
-conn = pymssql.connect(server='10.2.4.25', user='ICECORP\\1csystem', password='1cPass', database='shopEvents')
+conn = pymssql.connect(server='10.2.4.25', user='ICECORP\\1csystem', password='0dKasn@ms+', database='shopEvents')
 cursor = conn.cursor()
 time_limit	= (date_current - dt.timedelta(days=life_day_lenght)).strftime('%Y-%m-%d %H:%M:%S')
 
@@ -62,7 +62,8 @@ for file_name_to_delete in answer:
 bar.finish()
 log_message	= "Removed: "+str(file_removed_count)+" files"
 print(log_message)
-send_to_telegram(chat,log_message)
+if file_removed_count:
+	send_to_telegram(chat,log_message)
 
 if file_not_found_count:
 	log_message	= "Not found "+str(file_not_found_count)+" files"
@@ -92,7 +93,7 @@ for root, subdirs, files in os.walk(shares_path):
 	with open(list_file_path, 'wb') as list_file:
 		log_message="Processing "+str(len(files))+" files in directory: "+list_file_path
 		print(log_message)
-		send_to_telegram(chat,log_message)
+		#send_to_telegram(chat,log_message)
 		bar = progressbar.ProgressBar(maxval=len(files), widgets=[progressbar.Bar('=', '[', ']'), ' ', progressbar.Percentage()])
 		i=0
 		bar.start()
@@ -118,7 +119,7 @@ for root, subdirs, files in os.walk(shares_path):
 		bar.finish()
 		log_message="Removed by file system: "+str(files_removed_count)+" files"
 		print(log_message)
-		send_to_telegram(chat,log_message)
+		#send_to_telegram(chat,log_message)
 		files_removed_count=0
 log_message="Terminator job complete. normal exit"
 print(log_message)
