@@ -25,18 +25,21 @@ def terminator():
 		send_to_telegram(chat,"10.2.4.95 (images server) - Unavailable. Unable to terminate records. Exit")
 		exit()
 
-	if host_check("10.2.4.25"):
-		print("10.2.4.25 (SQL) - ok")
+	if host_check("10.2.4.124"):
+		print("10.2.4.124 (SQL) - ok")
 	else:
-		print("10.2.4.25 (SQL) - Unavailable. Exit")
-		send_to_telegram(chat,"10.2.4.25 (SQL) - Unavailable. Unable to terminate records. Exit")
+		print("10.2.4.124 (SQL) - Unavailable. Exit")
+		send_to_telegram(chat,"10.2.4.124 (SQL) - Unavailable. Unable to terminate records. Exit")
 		exit()
 
 	date_current=datetime.now()
 
 	#send_to_telegram(chat,"Removing old files..")
 
-	conn = pymssql.connect(server='10.2.4.25', user='ICECORP\\1csystem', password='0dKasn@ms+', database='shopEvents')
+	with open('sql.pass','r') as sql_pass_file:
+		sql_pass=sql_pass_file.read()
+
+	conn = pymssql.connect(server='10.2.4.124', user='ICECORP\\1csystem', password=sql_pass, database='shopEvents')
 	cursor = conn.cursor()
 	time_limit	= (date_current - dt.timedelta(days=life_day_lenght)).strftime('%Y-%m-%d %H:%M:%S')
 
@@ -149,11 +152,11 @@ def separate():
 		send_to_telegram(chat,"10.2.4.95 (images server) - Unavailable. Unable to terminate records. Exit")
 		exit()
 
-	if host_check("10.2.4.25"):
-		print("10.2.4.25 (SQL) - ok")
+	if host_check("10.2.4.124"):
+		print("10.2.4.124 (SQL) - ok")
 	else:
-		print("10.2.4.25 (SQL) - Unavailable. Exit")
-		send_to_telegram(chat,"10.2.4.25 (SQL) - Unavailable. Unable to terminate records. Exit")
+		print("10.2.4.124 (SQL) - Unavailable. Exit")
+		send_to_telegram(chat,"10.2.4.124 (SQL) - Unavailable. Unable to terminate records. Exit")
 		exit()
 
 	files_total_count=0
@@ -169,7 +172,10 @@ def separate():
 	files_count=0
 	gpu_id=0
 
-	conn = pymssql.connect(server='10.2.4.25', user='ICECORP\\1csystem', password='0dKasn@ms+', database='shopEvents')
+	with open('sql.pass','r') as sql_pass_file:
+		sql_pass=sql_pass_file.read()
+
+	conn = pymssql.connect(server='10.2.4.124', user='ICECORP\\1csystem', password=sql_pass, database='shopEvents')
 	cursor = conn.cursor()
 
 	# reset all to Not processed state

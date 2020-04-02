@@ -47,10 +47,10 @@ else:
 	exit()
 
 if host_check("10.2.4.25"):
-	print("10.2.4.25 (SQL) - ok")
+	print("10.2.4.124 (SQL) - ok")
 else:
-	print("10.2.4.25 (SQL) - Unavailable. Exit")
-	send_to_telegram(chat,"10.2.4.25 (SQL) - Unavailable. Unable to add records. Exit")
+	print("10.2.4.124 (SQL) - Unavailable. Exit")
+	send_to_telegram(chat,"10.2.4.124 (SQL) - Unavailable. Unable to add records. Exit")
 	exit()
 
 def load_image_into_numpy_array(image):
@@ -118,7 +118,10 @@ def main(argv):
 	with detection_graph.as_default():		
 		with tf.Session(graph=detection_graph) as sess:
 			
-			conn = pymssql.connect(server='10.2.4.25', user='ICECORP\\1csystem', password=PASTE_PASS, database='shopEvents')
+			with open('sql.pass','r') as sql_pass_file:
+				sql_pass = sql_pass_file.read()
+			
+			conn = pymssql.connect(server='10.2.4.124', user='ICECORP\\1csystem', password=sql_pass, database='shopEvents')
 			cursor = conn.cursor()
 
 			while (True):				

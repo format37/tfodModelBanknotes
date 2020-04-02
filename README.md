@@ -54,9 +54,9 @@ shop_names      = ["Altuf","Avangard","Mar","Tag","Sklad","SkladSM1","SkladSM2"]
 2. data_prepare.py  
 add shop names:  
 shop_names=["Altuf","Avangard","Mar","Tag","Sklad","SkladSM1","SkladSM2"]  
-3. mkdir /media/alex/7274516274512A5D/rcimages/5  
-4. mkdir /media/alex/7274516274512A5D/rcimages/5/boxed  
-5. mkdir /media/alex/7274516274512A5D/rcimages/5/original  
+3. mkdir /media/alex/7274516274512A5D/rcimages/6  
+4. mkdir /media/alex/7274516274512A5D/rcimages/6/boxed  
+5. mkdir /media/alex/7274516274512A5D/rcimages/6/original  
 ```
 
 # Result
