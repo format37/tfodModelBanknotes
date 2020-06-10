@@ -1,7 +1,12 @@
-#!/usr/bin/env python3
+#!/home/alex/anaconda3/envs/bank/bin/python3
+
+### /usr/bin/env python3
 
 import numpy as np
 import os
+
+os.chdir('/home/alex/.local/lib/python3.6/site-packages/tensorflow/models/research/object_detection/tfodModelBanknotes/using')
+
 import six.moves.urllib as urllib
 import sys
 import getopt
@@ -256,7 +261,7 @@ def main(argv):
 				prepare_data()
 
 def sleep_to_evening():
-	print("calculating sleep time..")
+	'''print("calculating sleep time..")
 	task_year	= (datetime.datetime.now() + datetime.timedelta(days=1)).year		
 	task_month	= (datetime.datetime.now() + datetime.timedelta(days=1)).month
 	task_day	= datetime.datetime.now().day
@@ -268,6 +273,9 @@ def sleep_to_evening():
 	time.sleep(sleeptime.seconds)
 	print("job started..")
 	send_to_telegram(chat,"job started..")
+	'''
+	send_to_telegram(chat,"job complete")
+	exit()
 		
 def prepare_data():
 	print("terminator..")

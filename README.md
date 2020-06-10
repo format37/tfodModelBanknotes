@@ -46,6 +46,14 @@ commented features:
 - open from web camera
 - stream to window
 
+# Install crontab
+```
+cp ~/.bashrc ~/.bashrc_conda   
+crontab -e   
+SHELL=/bin/bash   
+BASH_ENV=/home/alex/.bashrc_conda   
+0 23 * * * conda activate bank; /home/alex/anaconda3/envs/bank/bin/python3 /home/alex/.local/lib/python3.6/site-packages/tensorflow/models/research/object_detection/tfodModelBanknotes/using/detection_9_off.py
+```
 # Add store
 ```
 1. detection_9_off.py  
